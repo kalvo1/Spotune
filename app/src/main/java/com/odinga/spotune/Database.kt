@@ -1238,6 +1238,20 @@ interface DatabaseDao {
     
     @Query("""
         SELECT * FROM radio_seeds
+        WHERE masterRadioId = :radioId
+    """)
+    fun getRadioSeeds(radioId: String): List<RadioSeed>
+    
+    @Query("""
+        SELECT * FROM played_ytmr_tracks
+        WHERE radioId = :rid
+        ORDER BY RANDOM()
+        LIMIT 1
+    """)
+    fun getRandomRadioTrack(rid: String): PlayedYtmRadioTrack?
+    
+    @Query("""
+        SELECT * FROM radio_seeds
         WHERE masterRadioId = :radioId AND used = 0
     """)
     fun getUnusedRadioSeeds(radioId: String): List<RadioSeed>
@@ -1245,9 +1259,9 @@ interface DatabaseDao {
     @Query("""
         UPDATE radio_seeds
         SET used = 1
-        WHERE trackId = :seedId
+        WHERE trackId = :seedId AND masterRadioId = :radioId
     """)
-    fun markRadioSeedAsUsed(seedId: String)
+    fun markRadioSeedAsUsed(seedId: String, radioId: String)
     
     @Query("SELECT * FROM pending_requests")
     fun getPendingRequests(): List<PendingRequest>
@@ -1469,5 +1483,3 @@ class MyDataConverters {
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): DatabaseDao
 }
-
-

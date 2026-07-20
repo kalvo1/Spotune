@@ -2379,14 +2379,39 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             scope.launch(Dispatchers.IO) {
                 YtRadio.fetchingMoreTracks = true
                 
-                val unusedSeeds = databaseDao.getUnusedRadioSeeds(playlistQueue.orpid!!)
+                var unusedSeeds = databaseDao.getUnusedRadioSeeds(playlistQueue.orpid!!)
+                
+                if (unusedSeeds.isEmpty()) {
+                    val allSeeds = databaseDao.getRadioSeeds(playlistQueue.orpid!!)
+                    var randomPlayedTrack = databaseDao.getRandomRadioTrack(playlistQueue.orpid!!)
+                    
+                    val maxLoopTime = System.currentTimeMillis() + 40.seconds.inWholeMilliseconds
+                    
+                    while (allSeeds.firstOrNull { it.trackId ==  randomPlayedTrack!!.tid } != null && System.currentTimeMillis() < maxLoopTime) {
+                        randomPlayedTrack = databaseDao.getRandomRadioTrack(playlistQueue.orpid!!)
+                    }
+                    
+                    if (allSeeds.firstOrNull { it.trackId ==  randomPlayedTrack!!.tid } == null) {
+                        unusedSeeds = listOf(RadioSeed(
+                            trackId = randomPlayedTrack!!.tid,
+                            used = false,
+                            init = false,
+                            radioId = "RDAMVM${randomPlayedTrack!!.tid}",
+                            title = randomPlayedTrack!!.title,
+                            primaryArtist = randomPlayedTrack!!.artist,
+                            masterRadioId = playlistQueue.orpid!!
+                        ))
+                        
+                        databaseDao.insertRadioSeeds(unusedSeeds)
+                    }
+                }
                 
                 if (unusedSeeds.isNotEmpty()) {
                     val seed = unusedSeeds[0]
                     
                     val res: YtRadioRes? = YtRadio.getInitRadioResponse(seed.trackId, seed.radioId, playlistQueue.orpid)
                     
-                    databaseDao.markRadioSeedAsUsed(seed.trackId)
+                    databaseDao.markRadioSeedAsUsed(seed.trackId, seed.masterRadioId)
                     
                     if (res?.tracks?.isNotEmpty() == true) {
                         val radioTracks = YtRadio.processRadioItems(playlistQueue.orpid, playlistQueue.name, res.tracks)
@@ -2416,7 +2441,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         val endSilence = cT.silenceData?.endSilence?.start
 
         if (!crossFading && !trackChanged && endSilence != null && pos / 1000 > (endSilence - fadeDuration) && (dur / 1000 - endSilence) <= 40) {
-            println("[ST] Crossfading with silence data")
             trackChanged = true
             scope.launch {
                 handleTrackChanged()
@@ -2424,7 +2448,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         if (!crossFading && !trackChanged && endSilence == null && (dur - pos) / 1000 <= fadeDuration) {
-            println("[ST] Crossfading without silence data")
             trackChanged = true
             scope.launch {
                 handleTrackChanged()
@@ -2433,7 +2456,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         //fallback
         if (!trackChanged && (dur - pos) / 1000 <= fadeDuration) {
-            println("[ST] Crossfading, default")
             trackChanged = true
             scope.launch {
                 handleTrackChanged()
