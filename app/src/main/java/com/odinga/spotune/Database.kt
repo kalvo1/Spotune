@@ -547,16 +547,16 @@ data class PendingRequest(
 
 @Serializable
 @Entity(tableName = "radio_seeds", indices = [Index("masterRadioId"), Index("used")])
-data class RadioSeed (
+data class RadioSeed(
     @PrimaryKey
-    trackId: String,
+    val trackId: String,
     
-    used: Boolean,
-    init: Boolean,
-    radioId: String,
-    title: String,
-    primaryArtist: String,
-    masterRadioId: String,
+    val used: Boolean,
+    val init: Boolean,
+    val radioId: String,
+    val title: String,
+    val primaryArtist: String,
+    val masterRadioId: String,
 )
 
 //Relationship POJOs
@@ -1403,7 +1403,7 @@ interface DatabaseDao {
     fun deletePendingRequest(id: Long)
     
     @Query("DELETE FROM radio_seeds WHERE masterRadioId = :id")
-    fun deleteRadioSeeds(id: Long)
+    fun deleteRadioSeeds(id: String)
 }
 
 class MyDataConverters {

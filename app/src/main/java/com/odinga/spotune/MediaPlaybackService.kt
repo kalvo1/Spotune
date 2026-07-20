@@ -2379,7 +2379,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             scope.launch(Dispatchers.IO) {
                 YtRadio.fetchingMoreTracks = true
                 
-                val unusedSeeds = databaseDao.getUnusedRadioSeeds(playlistQueue.orpid)
+                val unusedSeeds = databaseDao.getUnusedRadioSeeds(playlistQueue.orpid!!)
                 
                 if (unusedSeeds.isNotEmpty()) {
                     val seed = unusedSeeds[0]
