@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Spotune</string>
+    <string name="preference_file_key">app_prefs</string>
+</resources>
