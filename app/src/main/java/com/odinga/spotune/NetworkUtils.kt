@@ -1040,6 +1040,24 @@ fun serveJson(context: MediaPlaybackService, httpClient: OkHttpClient, url: Stri
                 "success"
             )
         }
+        
+        "get-offline-recent-tracks" -> {
+            val shuffled = params.get("shuffled")?.firstOrNull()?.toBoolean() ?: false
+            val offset = params.get("offset")?.firstOrNull()?.toInt() ?: 0
+            val lastShuffleKey = params.get("lastShuffleKey")?.firstOrNull()?.toLong() ?: 0
+            
+            val trackList = if (shuffled) {
+                databaseDao.getOfflineShuffledRecents(lastShuffleKey)
+            } else {
+                databaseDao.getOfflineUnshuffledRecents(offset)
+            }
+            
+            return NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.OK,
+                "application/json",
+                json.encodeToString(trackList)
+            )
+        }
     }
 
     if (url == null) {

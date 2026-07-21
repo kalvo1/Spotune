@@ -108,6 +108,12 @@ class AudioCacheManager(
                     }
                 }
                 
+                val tracksMatchingId = databaseDao.searchTracksMatchingId("sourceIds:${entry.trackId}")
+                
+                tracksMatchingId.forEach { track ->
+                    databaseDao.unmarkTrackEntityAsOffline(track.id)
+                }
+                
                 databaseDao.deleteCachedTrackMeta(entry.trackId)
             }
             

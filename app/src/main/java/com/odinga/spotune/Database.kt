@@ -687,6 +687,29 @@ interface DatabaseDao {
         OFFSET :offset
     """)
     fun getUnshuffledRecents(offset: Int): List<HistoryWithTrack>
+    
+    @Transaction
+    @Query("""
+        SELECT history.*
+        FROM history
+        JOIN tracks ON history.trackId = tracks.id
+        WHERE history.shuffleKey > :lastKey AND tracks.isOffline = 1
+        ORDER BY history.shuffleKey
+        LIMIT 50
+    """)
+    fun getOfflineShuffledRecents(lastKey: Long): List<HistoryWithTrack>
+    
+    @Transaction
+    @Query("""
+        SELECT history.*
+        FROM history
+        JOIN tracks ON history.trackId = tracks.id
+        WHERE tracks.isOffline = 1
+        ORDER BY history.added DESC
+        LIMIT 50
+        OFFSET :offset
+    """)
+    fun getOfflineUnshuffledRecents(offset: Int): List<HistoryWithTrack>
 
     @Transaction
     @Query("""
@@ -737,6 +760,14 @@ interface DatabaseDao {
         LIMIT 50
     """)
     fun searchTracks(query: String): List<TrackWithRelations>
+    
+    @Query("""
+        SELECT tracks.*
+        FROM tracks
+        JOIN tracks_fts ON tracks.id = tracks_fts.rowid
+        WHERE tracks_fts MATCH :query
+    """)
+    fun searchTracksMatchingId(query: String): List<TrackEntity>
 
     @Query("""
         UPDATE history
