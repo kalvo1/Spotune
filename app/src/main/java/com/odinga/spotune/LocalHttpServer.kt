@@ -31,6 +31,32 @@ class LocalHttpServer (
                 "/image" -> serveImage(context, session, httpClient, imageCacheDir, cachedStaticFilesDir, tgtUrl)
                 "/html" -> serveHtml(params)
                 "/app.db" -> serveDbFile(context)
+                "/background-webview" -> {
+                    val html = """
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                        <title>Welcome to Spotune</title>
+                        <style>
+                            body {
+                                width: 35em;
+                                margin: 0 auto;
+                                font-family: Tahoma, Verdana, Arial, sans-serif;
+                            }
+                        </style>
+                        </head>
+                        <body>
+                        <h1>Welcome to Spotune!</h1>
+                        </body>
+                        </html>
+                    """.trimIndent()
+                    
+                    NanoHTTPD.newFixedLengthResponse(
+                        NanoHTTPD.Response.Status.OK,
+                        "text/html",
+                        html
+                    )
+                }
                 "/" -> getLocalStaticFile("/static/index.html", context, cachedStaticFilesDir)
                 else -> handleOtherPaths(context, httpClient, session, cachedStaticFilesDir)
             }
