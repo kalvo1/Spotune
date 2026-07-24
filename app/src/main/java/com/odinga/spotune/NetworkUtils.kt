@@ -1109,6 +1109,11 @@ fun serveAudio(
             "No URL provided"
         )
     }
+
+    scope.launch(Dispatchers.IO) {
+        audioCacheManager.cleanCache()
+    }
+
     val uri = url.toUri()
 
     val trackId = uri.getQueryParameter("id")
@@ -1326,6 +1331,10 @@ fun serveImage(
         )
     }
 
+    scope.launch(Dispatchers.IO) {
+        imageCacheManager.cleanCache()
+    }
+
     val cacheKey = generateCacheKey(url)
 
     val cachedImage: CachedImage? = databaseDao.getCachedImage(cacheKey)
@@ -1396,10 +1405,6 @@ private  fun handleRemoteImageRequest(
     cacheDir: File
 ): NanoHTTPD.Response {
 
-    scope.launch(Dispatchers.IO) {
-        imageCacheManager.cleanCache()
-    }
-    
     val cacheKey = generateCacheKey(url)
     val file = File(cacheDir, cacheKey)
 
@@ -1479,10 +1484,6 @@ private fun handleRemoteRangeRequest(
     cacheDir: File
 ): NanoHTTPD.Response {
     
-    scope.launch(Dispatchers.IO) {
-        audioCacheManager.cleanCache()
-    }
-
     val chunkSize: Long = 10L * 1024 * 1024
 
     val cacheKey = generateCacheKey(url)

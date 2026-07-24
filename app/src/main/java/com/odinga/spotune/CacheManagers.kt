@@ -103,7 +103,9 @@ class AudioCacheManager(
                             
                             databaseDao.deleteAudioChunkEntry(it.id)
                             
-                        } catch (_: Exception) {
+                        } catch (e: Exception) {
+                            println("Error deleting audio chunk file: ${e.message}")
+                            e.printStackTrace()
                         }
                     }
                 }
