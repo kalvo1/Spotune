@@ -294,15 +294,22 @@ class MainActivity : AppCompatActivity(), MediaPlaybackService.WebViewEventCallb
     }
     
     override fun onPause() {
+        isPaused = true
+        super.onPause()
+    }
+    
+    override fun onStop() {
         keyboardHeightProvider.stop()
         isPaused = true
+        mediaService.toggleNetworkMonitor(false)
         
-        super.onPause()
+        super.onStop()
     }
     
     override fun onResume() {
         super.onResume()
         
+        mediaService.toggleNetworkMonitor(true)
         webView.post {
             keyboardHeightProvider.start()
         }

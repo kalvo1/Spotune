@@ -404,7 +404,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
         
         networkMonitor = NetworkMonitor(
-            context = this,
             onConnChange = { status ->
                 onConnectivityChange(status)
             }
@@ -886,7 +885,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 }
                 
                 savePlaybackPosition()
-                networkMonitor.checkInternet()
 
                 checkAndPlayNextTrack(pos, dur)
 
@@ -1490,7 +1488,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         fadeJob?.cancel()
         resetInactivePlayer()
 
-        if (nextTrack?.waitForNetwork == true && !NetworkState.isOnline()) {
+        if (nextTrack?.waitForNetwork == true && !isOnline) {
             if (pWhenReady) {
                 inactivePlayerObj.trackId = null
                 playbackPending = true
@@ -1799,7 +1797,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         startPlaybackWhenReady(inactivePlayerObj, seekPos)
                     }
                 } else {
-                    if (NetworkState.isOnline()) {
+                    if (isOnline) {
                         val cTries = nextTrack!!.cacheTries
                         nextTrack!!.cacheTries = cTries + 1
 
@@ -1875,10 +1873,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             if (wifiLock?.isHeld == true) {
                 wifiLock?.release()
             }
+            networkMonitor.stop()
             return
         }
+        
+        networkMonitor.start()
 
-        if (!NetworkState.isOnline() && nT.localFile == null && !nT.hasPartialChunks && !nT.fromRestoredQueue && nT.source != "from_history") {
+        if (!isOnline && nT.localFile == null && !nT.hasPartialChunks && !nT.fromRestoredQueue && nT.source != "from_history") {
             onIsPlayingChanged(false)
             inactivePlayerObj.trackId = null
             playbackPending = true
@@ -2677,10 +2678,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 activePlayer?.volume = min(maximumVolume, accumulatedVolume)
                 delay(interval)
             }
+            
+            networkMonitor.start()
         }
     }
 
     fun playerPause() {
+        networkMonitor.stop()
         if (activePlayer == null) return
             
         if (wifiLock?.isHeld == true) {
@@ -4477,7 +4481,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         vid = trackId
                     }
                 } else {
-                    if (!NetworkState.isOnline()) {
+                    if (isOnline) {
                         webViewCallback?.dispatchWebViewEvent(
                             "evaluate",
                             """
@@ -5010,6 +5014,16 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         hiddenWebViewDestroyJob = scope.launch {
             delay(3.minutes)
             webViewCallback?.destroyHiddenWebview()
+        }
+    }
+    
+    fun toggleNetworkMonitor(start: Boolean = true) {
+        if (start) {
+            networkMonitor.start()
+        } else {
+            if (!playbackPending && activePlayer?.isPlaying == false) {
+                networkMonitor.stop()
+            }
         }
     }
     
