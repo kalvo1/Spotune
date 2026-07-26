@@ -301,7 +301,10 @@ class MainActivity : AppCompatActivity(), MediaPlaybackService.WebViewEventCallb
     override fun onStop() {
         keyboardHeightProvider.stop()
         isPaused = true
-        mediaService.toggleNetworkMonitor(false)
+        
+        if (playbackServiceStarted) {
+            mediaService.toggleNetworkMonitor(false)
+        }
         
         super.onStop()
     }
@@ -309,7 +312,10 @@ class MainActivity : AppCompatActivity(), MediaPlaybackService.WebViewEventCallb
     override fun onResume() {
         super.onResume()
         
-        mediaService.toggleNetworkMonitor(true)
+        if (playbackServiceStarted) {
+            mediaService.toggleNetworkMonitor(true)
+        }
+        
         webView.post {
             keyboardHeightProvider.start()
         }
