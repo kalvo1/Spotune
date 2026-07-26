@@ -347,8 +347,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             this,
             onPause = { canRegain ->
                 if (activePlayer?.isPlaying == true) {
-                    activePlayer?.pause()
-                    onIsPlayingChanged(false)
+                    playerPause()
                     if (canRegain) {
                         playerPausedByAudioManager = true
                     }
@@ -356,8 +355,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             },
             onResume = {
                 if (playerPausedByAudioManager) {
-                    activePlayer?.start()
-                    onIsPlayingChanged(true)
+                    playerPlay()
                     playerPausedByAudioManager = false
                 }
             },
@@ -1902,6 +1900,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             inactivePlayer = activePlayer
             activePlayer = activePlayerObj.player
             
+            inactivePlayer?.setOnInfoListener(null)
+            inactivePlayer?.setOnErrorListener(null)
+            inactivePlayer?.setOnPreparedListener(null)
+            inactivePlayer?.setOnCompletionListener(null)
+            
             activePlayer?.setOnInfoListener(null)
             activePlayer?.setOnErrorListener(null)
             activePlayer?.setOnPreparedListener(null)
@@ -2256,10 +2259,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     
     fun resetInactivePlayer() {
         inactivePlayer?.stop()
-        inactivePlayer?.setOnCompletionListener(null)
-        inactivePlayer?.setOnErrorListener(null)
-        inactivePlayer?.setOnInfoListener(null)
-        inactivePlayer?.setOnPreparedListener(null)
         inactivePlayer?.release()
         inactivePlayer = null
         inactivePlayerObj = com.odinga.spotune.Player()
