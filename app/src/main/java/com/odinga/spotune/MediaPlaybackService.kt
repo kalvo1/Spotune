@@ -1814,14 +1814,15 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     } else {
                         nextTrack!!.waitForNetwork = true
                     }
-
-                    nextTrackCached = false
-                    cachingNextTrack = false
-
+                    
+                    delay(3000)
+                    
                     if (pWhenReady) {
-                        delay(500)
                         handleTrackChanged()
                     }
+                    
+                    nextTrackCached = false
+                    cachingNextTrack = false
                 }
                 
                 generateQueue()
