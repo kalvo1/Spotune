@@ -50,16 +50,16 @@ class NetworkMonitor(
         override fun onLost(network: Network) {
             checkInternet()
         }
-
-        private fun checkInternet() {
-            scope.launch(Dispatchers.IO) {
-                delay(3.seconds)
-                
-                val hasInternet = NetworkState.isOnline()
-                
-                withContext(Dispatchers.Main) {
-                    onConnChange(hasInternet)
-                }
+    }
+    
+    fun checkInternet() {
+        scope.launch(Dispatchers.IO) {
+            delay(3.seconds)
+            
+            val hasInternet = NetworkState.isOnline()
+            
+            withContext(Dispatchers.Main) {
+                onConnChange(hasInternet)
             }
         }
     }

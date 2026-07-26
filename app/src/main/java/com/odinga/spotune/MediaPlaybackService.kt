@@ -888,6 +888,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 }
                 
                 savePlaybackPosition()
+                networkMonitor.checkInternet()
 
                 checkAndPlayNextTrack(pos, dur)
 
@@ -1491,7 +1492,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         fadeJob?.cancel()
         resetInactivePlayer()
 
-        if (nextTrack?.waitForNetwork == true && !isOnline) {
+        if (nextTrack?.waitForNetwork == true && !NetworkState.isOnline()) {
             if (pWhenReady) {
                 inactivePlayerObj.trackId = null
                 playbackPending = true
@@ -1800,7 +1801,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         startPlaybackWhenReady(inactivePlayerObj, seekPos)
                     }
                 } else {
-                    if (isOnline) {
+                    if (NetworkState.isOnline()) {
                         val cTries = nextTrack!!.cacheTries
                         nextTrack!!.cacheTries = cTries + 1
 
@@ -1879,7 +1880,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             return
         }
 
-        if (!isOnline && nT.localFile == null && !nT.hasPartialChunks && !nT.fromRestoredQueue && nT.source != "from_history") {
+        if (!NetworkState.isOnline() && nT.localFile == null && !nT.hasPartialChunks && !nT.fromRestoredQueue && nT.source != "from_history") {
             onIsPlayingChanged(false)
             inactivePlayerObj.trackId = null
             playbackPending = true
@@ -1904,6 +1905,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             activePlayer?.setOnInfoListener(null)
             activePlayer?.setOnErrorListener(null)
             activePlayer?.setOnPreparedListener(null)
+            activePlayer?.setOnCompletionListener(null)
             
             prevTrack = currentTrack
             currentTrack = nextTrack
@@ -2159,6 +2161,10 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             }
             
             true
+        }
+        
+        activePlayer?.setOnCompletionListener { _ ->
+            onIsPlayingChanged(false)
         }
         
         if (!activePlayerObj.isReady) {
@@ -4472,7 +4478,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         vid = trackId
                     }
                 } else {
-                    if (!isOnline) {
+                    if (!NetworkState.isOnline()) {
                         webViewCallback?.dispatchWebViewEvent(
                             "evaluate",
                             """
