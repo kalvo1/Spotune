@@ -177,7 +177,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         val addTrackToLibMutex = Mutex()
 
         val connectivityCheckReq: Request = Request.Builder()
-            .url("https://www.google.com/")
+            .url("https://api.ddns.net/cdn/conn-test.txt")
             .head()
             .build()
 

@@ -1,6 +1,6 @@
 package com.odinga.spotune
 
-import com.odinga.spotune.MediaPlaybackService.Companion.alHttpClient
+import com.odinga.spotune.MediaPlaybackService.Companion.httpClient
 import com.odinga.spotune.MediaPlaybackService.Companion.connectivityCheckReq
 import com.odinga.spotune.MediaPlaybackService.Companion.scope
 import android.content.Context
@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.seconds
 object NetworkState {
     fun isOnline(): Boolean {
         return try {
-            val res = alHttpClient!!.newCall(connectivityCheckReq).execute()
+            val res = httpClient!!.newCall(connectivityCheckReq).execute()
             res.isSuccessful
         } catch(_: Exception) {
             false
