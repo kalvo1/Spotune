@@ -24,17 +24,6 @@ class LastFm(
     val cookieManager: CookieManager = CookieManager.getInstance()
     var fetchingCookie = false
     var cookieRefreshed = false
-
-    fun makeGetRequest(request: Request): String? {
-        try {
-            val res = httpClient.newCall(request).execute()
-            return res.body?.string()
-        } catch (e: IOException) {
-            ErrorReporter.report(e)
-            e.printStackTrace()
-            return null
-        }
-    }
     
     suspend fun fetchPage(url: String, cacheKey: String, rel: String? = "false"): String? {
         if (!NetworkState.isOnline()) {

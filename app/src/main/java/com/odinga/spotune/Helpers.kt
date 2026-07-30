@@ -1275,3 +1275,33 @@ fun syncSavedArtist(jsonBody: String) {
         }
     }
 }
+
+fun makeGetRequest(request: Request): String? {
+    try {
+        val res = httpClient.newCall(request).execute()
+        return res.body?.string()
+    } catch (e: IOException) {
+        ErrorReporter.report(e)
+        e.printStackTrace()
+        return null
+    }
+}
+
+fun getLargeJsonString(cacheDir: File, cacheKey: String): String? {
+    val file = File(cacheDir, cacheKey)
+    val cachedJson: LargeJsonCache? = databaseDao.getCachedLargeJson(cacheKey)
+    
+    if (cachedJson != null) {
+        if (file.exists()) {
+            val jsonString = file.readText()
+            
+            databaseDao.updateLargeJsonAccessTime(cacheKey, System.currentTimeMillis())
+            
+            return jsonString
+        }
+        
+        return null
+    }
+    
+    return null
+}

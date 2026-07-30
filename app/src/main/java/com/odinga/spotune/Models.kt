@@ -467,3 +467,9 @@ data class PendingScrobble (
     var scrobbleToken: String? = null,
     var playbackStartedTimestampSec: Double? = null
 )
+
+@Serializable
+data class LyricsifyResult (
+    val status: String,
+    val html: String? = null
+)

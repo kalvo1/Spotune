@@ -1685,7 +1685,7 @@ fun generateCachedPlstTrackEnt(parsedTrack: Track, playlistId: String, playlistN
         }
     }
     
-    val trackVers = track.oldvid != null && track.oldvid != track.id
+    val trackVers = track.album.name != "_video_"
     
     val cachedTrackEntity = PlaylistTrackEntity(
         tid = track.id,

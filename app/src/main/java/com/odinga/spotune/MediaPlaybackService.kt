@@ -200,6 +200,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         lateinit var httpClientNp: OkHttpClient
         lateinit var playerHttpClient: OkHttpClient
         lateinit var lastFmClient: LastFm
+        lateinit var lyricsify: Lyricsify
         lateinit var sptClient: SptClient
         lateinit var imageCacheManager: ImageCacheManager
         lateinit var audioCacheManager: AudioCacheManager
@@ -412,6 +413,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         networkMonitor.start()
 
         lastFmClient = LastFm(this)
+        lyricsify = Lyricsify(this, cachedJsonDir)
         
         sptClient = SptClient(
             httpClient,
@@ -840,6 +842,10 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         if (nextTrack!!.largeCoverUrl == null) {
+            fetchMissingNextTrackCover()
+        }
+        
+        if (nextTrack!!.largeCoverUrl == null) {
             return null
         }
         
@@ -1126,6 +1132,18 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             showMediaNotification(activePlayer!!.isPlaying)
         } else {
             showMediaNotification(false)
+        }
+    }
+    
+    fun fetchMissingNextTrackCover() {
+        val id = nextTrack!!.id
+        
+        val trackData: TrackPlaybackData? = getYtTrackPlaybackData("https://myapps.ddns.net/api/ytmusic/get-video-streams?id=${id}", id)
+        
+        val thumb = trackData.thumbnail
+        if (thumb != null) {
+            val hdThumb = thumb.split("?").first()
+            nextTrack?.largeCoverUrl = "http://localhost:7171/image?url=${btoa(hdThumb)}"
         }
     }
 
@@ -2286,7 +2304,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             return@launch
         }
         
-        if (track.oldvid != null && track.oldvid != track.id && track.album.name != "_video_") {
+        if (track.oldvid != null && track.album.name != "_video_") {
             val matchingCachedAlbumTrks = databaseDao.getCachedAlbumTracksMatchingId(track.oldvid!!)
             val matchingCachedPlstTrks = databaseDao.getCachedPlstTracksMatchingId(track.oldvid!!)
             
@@ -2303,6 +2321,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     trk.hasPartialChunks = true
                     trk.silenceData = track.silenceData
                     trk.localFile = track.localFile
+                    trk.explicit = track.explicit
                     
                     databaseDao.updateCachedAlbumTrackVerState(it.id, track.id, it.tid, json.encodeToString(trk))
                 }
@@ -2322,6 +2341,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     trk.hasPartialChunks = true
                     trk.silenceData = track.silenceData
                     trk.localFile = track.localFile
+                    trk.album = track.album
+                    trk.artists = track.artists
+                    trk.coverUrl = track.coverUrl
+                    trk.largeCoverUrl = track.largeCoverUrl
+                    trk.explicit = track.explicit
                     
                     databaseDao.updateCachedPlaylistTrackVerState(it.id, track.id, it.tid, json.encodeToString(trk))
                 }

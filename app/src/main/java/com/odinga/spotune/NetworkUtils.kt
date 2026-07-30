@@ -1058,6 +1058,31 @@ fun serveJson(context: MediaPlaybackService, httpClient: OkHttpClient, url: Stri
                 json.encodeToString(trackList)
             )
         }
+        
+        "get-lyricsify-search-results" -> {
+            val reload = params.get("rel")?.firstOrNull()?.toBoolean() ?: false
+            val st = params.get("st")?.firstOrNull()
+            
+            if (st == null) {
+                return NanoHTTPD.newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.BAD_REQUEST,
+                    NanoHTTPD.MIME_PLAINTEXT,
+                    "Missing Search term"
+                )
+            }
+            
+            
+            val sr = runBlocking {
+                lyricsify.fetchSearchResults(st, reload)
+            }
+            
+            
+            return NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.OK,
+                "application/json",
+                json.encodeToString(sr)
+            )
+        }
     }
 
     if (url == null) {

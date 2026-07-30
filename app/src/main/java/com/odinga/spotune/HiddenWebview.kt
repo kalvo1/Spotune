@@ -15,6 +15,7 @@ import com.odinga.spotune.MediaPlaybackService.Companion.sptClientToken
 import com.odinga.spotune.MediaPlaybackService.Companion.sptToken
 import com.odinga.spotune.MediaPlaybackService.Companion.webViewUserAgent
 import com.odinga.spotune.MediaPlaybackService.Companion.lastFmClient
+import com.odinga.spotune.MediaPlaybackService.Companion.lyricsify
 import com.odinga.spotune.MediaPlaybackService.Companion.innerTubeContext
 import kotlin.text.contains
 import com.odinga.spotune.SharedDependencies.databaseDao
@@ -84,6 +85,12 @@ class WebviewManager(private val activity: MainActivity) {
                     lastFmClient.cookieRefreshed = true
                 } else if (url?.contains("music.youtube") == true) {
                     view?.evaluateJavascript(ytjs, null)
+                } else if (url?.contains("lyricsify") == true) {
+                    if (url?.contains("lyricsify.com/search") == true) {
+                        view?.evaluateJavascript(lyricsify.searchJs, null)
+                    } else {
+                        view?.evaluateJavascript(lyricsify.searchJs, null)
+                    }
                 }
             }
         }
@@ -177,6 +184,12 @@ class JsInterface(private val activity: MainActivity) {
     @JavascriptInterface
     fun saveInnertubeCtxt(ctxt: String) {
         innerTubeContext = ctxt
+    }
+    
+    @JavascriptInterface
+    fun setLyricsifyPage(resultString: String) {
+        val result = json.decodeFromString<LyricsifyResult>(resultString)
+        lyricsify.pageFromBrowser = result.html
     }
     
     @JavascriptInterface
