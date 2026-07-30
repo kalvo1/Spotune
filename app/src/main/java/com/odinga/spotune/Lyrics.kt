@@ -165,6 +165,10 @@ class Lyricsify(
             cookies = null
             savedBody = null
         }
+
+        if (savedBody?.contains("Just a moment") == true) {
+            savedBody = null
+        }
         
         if (savedBody != null) return savedBody
         
@@ -180,6 +184,10 @@ class Lyricsify(
             val req = reqBuilder.build()
             
             body = makeGetRequest(req)
+        }
+
+        if (body?.contains("Just a moment") == true) {
+            body = fetchPageFromBrowser(url)
         }
 
         if (body != null) {
