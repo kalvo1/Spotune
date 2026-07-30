@@ -7,6 +7,7 @@ import com.odinga.spotune.MediaPlaybackService.Companion.scope
 import com.odinga.spotune.SharedDependencies.databaseDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.Request
 import java.io.File
@@ -81,7 +82,7 @@ class Lyricsify(
             
             window.JsBridge?.setLyricsifyPage(JSON.stringify(result));
         }()
-    """..trimIndent()
+    """.trimIndent()
     
     var fetchingCookie = false
     var pageFromBrowser: String? = null
@@ -193,7 +194,7 @@ class Lyricsify(
             
             file.writeText(body)
             
-            CacheUtils.updateCacheSize("cached_json", body.toByteArray(Charsets.UTF_8).size)
+            CacheUtils.updateCacheSize("cached_json", body.toByteArray(Charsets.UTF_8).size.toLong())
         }
 
         return body
@@ -205,7 +206,7 @@ class Lyricsify(
         val url = if (rel == true) {
             "https://www.lyricsify.com/search?q=${searchTerm}&type=song"
         } else {
-            "https://www.lyricsify.com/search?q=${searchTerm}
+            "https://www.lyricsify.com/search?q=${searchTerm}"
         }
         
         val html = fetchPage(url, rel)

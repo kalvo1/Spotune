@@ -1140,7 +1140,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         
         val trackData: TrackPlaybackData? = getYtTrackPlaybackData("https://myapps.ddns.net/api/ytmusic/get-video-streams?id=${id}", id)
         
-        val thumb = trackData.thumbnail
+        val thumb = trackData?.thumbnail
         if (thumb != null) {
             val hdThumb = thumb.split("?").first()
             nextTrack?.largeCoverUrl = "http://localhost:7171/image?url=${btoa(hdThumb)}"

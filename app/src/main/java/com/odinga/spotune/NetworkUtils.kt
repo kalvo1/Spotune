@@ -18,6 +18,7 @@ import com.odinga.spotune.SharedDependencies.databaseDao
 import com.odinga.spotune.MediaPlaybackService.Companion.ytClient
 import com.odinga.spotune.MediaPlaybackService.Companion.ytDlp
 import com.odinga.spotune.MediaPlaybackService.Companion.sState
+import com.odinga.spotune.MediaPlaybackService.Companion.lyricsify
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
