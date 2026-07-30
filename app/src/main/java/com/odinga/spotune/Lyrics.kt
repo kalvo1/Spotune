@@ -24,7 +24,7 @@ class Lyricsify(
         !function() {
             let retries = 0;
             let body = document.querySelector('body')?.outerHTML || 'no body';
-            const timeOut = Date.now() + (200 * 200);
+            const timeOut = Date.now() + (60 * 1000);
             
             while (true) {
                 body = document.querySelector('body')?.outerHTML || 'no body';
@@ -85,6 +85,7 @@ class Lyricsify(
     """.trimIndent()
     
     var fetchingCookie = false
+    var cancelPageReq = false
     var pageFromBrowser: String? = null
     val cookieManager: CookieManager = CookieManager.getInstance()
     
@@ -122,14 +123,14 @@ class Lyricsify(
     suspend fun fetchPageFromBrowser(url: String): String? {
         if (!fetchPageMutex.tryLock()) return null
         
+        cancelPageReq = false
         pageFromBrowser = null
         
         try {
             service.hiddenWebViewLoadPage(url)
-            service.hiddenWebViewShow()
             
             var trials = 0
-            while (pageFromBrowser == null && trials < 400) {
+            while (pageFromBrowser == null && trials < 400 && !cancelPageReq) {
                 trials++
                 delay(500L)
             }
@@ -143,6 +144,9 @@ class Lyricsify(
             ErrorReporter.report(e)
             e.printStackTrace()
         } finally {
+            if (cancelPageReq) {
+                pageFromBrowser = null
+            }
             fetchPageMutex.unlock()
         }
         

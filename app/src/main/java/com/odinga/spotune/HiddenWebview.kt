@@ -17,8 +17,10 @@ import com.odinga.spotune.MediaPlaybackService.Companion.webViewUserAgent
 import com.odinga.spotune.MediaPlaybackService.Companion.lastFmClient
 import com.odinga.spotune.MediaPlaybackService.Companion.lyricsify
 import com.odinga.spotune.MediaPlaybackService.Companion.innerTubeContext
+import com.odinga.spotune.MediaPlaybackService.Companion.scope
 import kotlin.text.contains
 import com.odinga.spotune.SharedDependencies.databaseDao
+import kotlinx.coroutines.launch
 
 class WebviewManager(private val activity: MainActivity) {
     var hiddenWebView: WebView? = null
@@ -194,6 +196,8 @@ class JsInterface(private val activity: MainActivity) {
     
     @JavascriptInterface
     fun unhideWebView() {
-        activity.hiddenWebviewManager.showWebview()
+        scope.launch {
+            activity.hiddenWebviewManager.showWebview()
+        }
     }
 }
