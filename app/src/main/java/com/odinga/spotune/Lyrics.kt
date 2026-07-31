@@ -22,6 +22,7 @@ class Lyricsify(
     
     val searchJs = """
         !function() {
+            if (!location.href.includes('search')) return;
             let retries = 0;
             let body = document.querySelector('body')?.outerHTML || 'no body';
             const timeOut = Date.now() + (60 * 1000);
@@ -151,6 +152,7 @@ class Lyricsify(
         }
         
         service.hiddenWebViewHide()
+        service.hiddenWebViewLoadPage("about:blank")
         return pageFromBrowser
     }
     
@@ -188,10 +190,10 @@ class Lyricsify(
             val req = reqBuilder.build()
             
             body = makeGetRequest(req)
-        }
 
-        if (body?.contains("Just a moment") == true) {
-            body = fetchPageFromBrowser(url)
+            if (body?.contains("Just a moment") == true) {
+                body = fetchPageFromBrowser(url)
+            }
         }
 
         if (body != null) {
