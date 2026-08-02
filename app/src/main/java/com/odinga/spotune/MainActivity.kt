@@ -208,6 +208,10 @@ class MainActivity : AppCompatActivity(), MediaPlaybackService.WebViewEventCallb
     override fun hiddenWebViewHide() {
         hiddenWebviewManager.hideWebView()
     }
+
+    override fun hiddenWebViewReset() {
+        hiddenWebviewManager.reset()
+    }
     
     override fun startService() {
         val intent = Intent(this@MainActivity, MediaPlaybackService::class.java)

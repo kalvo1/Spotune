@@ -25,7 +25,7 @@ class Lyricsify(
             if (!location.href.includes('search')) return;
             let retries = 0;
             let body = document.querySelector('body')?.outerHTML || 'no body';
-            const timeOut = Date.now() + (60 * 1000);
+            let timeOut = Date.now() + (60 * 1000);
             
             while (true) {
                 body = document.querySelector('body')?.outerHTML || 'no body';
@@ -43,12 +43,17 @@ class Lyricsify(
             
             if (!body.includes('Top Results')) {
                 window.JsBridge?.unhideWebView();
+
+                timeOut = Date.now() + (500 * 200)
+
+                while(true) {
+                    
+                }
                 
                 const w = setInterval(function() {
                     retries++;
                     if (retries > 500) {
                         clearInterval(w);
-                        return;
                     }
                     
                     if (body.includes('Top Results')) {
@@ -60,12 +65,12 @@ class Lyricsify(
             }
             
             body = document.querySelector('body')?.outerHTML || 'no body'
-            
+            retries = 0
+
             const z = setInterval(function() {
                 retries++;
                 if (retries > 500) {
                     clearInterval(z);
-                    return;
                 }
                 
                 if (body.includes('Top Results')) {
@@ -73,15 +78,19 @@ class Lyricsify(
                 }
                 
                 body = document.querySelector('body')?.outerHTML || 'no body'
+                sendResult();
             }, 200);
             
-            let result = {status: "failed", html: null};
-            
-            if (body.includes('Top Results')) {
-                result = {status: "ok", html: body};
+            const sendResult = () => {
+                let result = {status: "failed", html: null};
+                
+                if (body.includes('Top Results')) {
+                    result = {status: "ok", html: body};
+                }
+                
+                window.JsBridge?.setLyricsifyPage(JSON.stringify(result));
+                window.JsBridge?.hideWebView();
             }
-            
-            window.JsBridge?.setLyricsifyPage(JSON.stringify(result));
         }()
     """.trimIndent()
     
@@ -151,8 +160,7 @@ class Lyricsify(
             fetchPageMutex.unlock()
         }
         
-        service.hiddenWebViewHide()
-        service.hiddenWebViewLoadPage("about:blank")
+        service.resetHiddenWebview()
         return pageFromBrowser
     }
     

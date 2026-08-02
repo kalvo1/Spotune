@@ -105,12 +105,6 @@ class WebviewManager(private val activity: MainActivity) {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptThirdPartyCookies(hiddenWebView, true)
 
-        webViewUserAgent = "Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Mobile Safari/537.36"
-
-        if (webViewUserAgent != null) {
-            hiddenWebView?.settings?.userAgentString = webViewUserAgent
-        }
-
         container?.addView(hiddenWebView)
         root.addView(container)
     }
@@ -135,7 +129,7 @@ class WebviewManager(private val activity: MainActivity) {
                 WebViewCompat.addDocumentStartJavaScript(
                     hiddenWebView!!,
                     sptJs,
-                    setOf("*")
+                    setOf("https://open.spotify.com")
                 )
             }
         }
@@ -147,6 +141,8 @@ class WebviewManager(private val activity: MainActivity) {
             stopLoading()
             loadUrl("about:blank")
         }
+
+        hideWebView()
     }
 
     fun destroy() {
@@ -198,6 +194,13 @@ class JsInterface(private val activity: MainActivity) {
     fun unhideWebView() {
         scope.launch {
             activity.hiddenWebviewManager.showWebview()
+        }
+    }
+
+    @JavascriptInterface
+    fun hideWebView() {
+        scope.launch {
+            activity.hiddenWebviewManager.hideWebView()
         }
     }
 }

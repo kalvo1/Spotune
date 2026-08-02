@@ -148,6 +148,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         fun hiddenWebViewHide()
 
         fun destroyHiddenWebview()
+
+        fun hiddenWebViewReset()
         
         fun startService()
     }
@@ -2341,11 +2343,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     trk.hasPartialChunks = true
                     trk.silenceData = track.silenceData
                     trk.localFile = track.localFile
+                    trk.title = track.title
                     trk.album = track.album
                     trk.artists = track.artists
                     trk.coverUrl = track.coverUrl
                     trk.largeCoverUrl = track.largeCoverUrl
                     trk.explicit = track.explicit
+                    trk.durationString = track.durationString
                     
                     databaseDao.updateCachedPlaylistTrackVerState(it.id, track.id, it.tid, json.encodeToString(trk))
                 }
@@ -5029,8 +5033,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     fun resetHiddenWebview() {
         scope.launch {
-            delay(60.seconds)
-            webViewCallback?.loadPageInHiddenWebView("about:blank")
+            webViewCallback?.hiddenWebViewReset()
         }
     }
 
