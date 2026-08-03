@@ -87,12 +87,8 @@ class WebviewManager(private val activity: MainActivity) {
                     lastFmClient.cookieRefreshed = true
                 } else if (url?.contains("music.youtube") == true) {
                     view?.evaluateJavascript(ytjs, null)
-                } else if (url?.contains("lyricsify") == true) {
-                    if (url?.contains("lyricsify.com/search") == true) {
-                        view?.evaluateJavascript(lyricsify.searchJs, null)
-                    } else {
-                        view?.evaluateJavascript(lyricsify.searchJs, null)
-                    }
+                } else if (url?.contains("lyricsify.com/search") == true && lyricsify.searchJs != null) {
+                    view?.evaluateJavascript(lyricsify.searchJs!!, null)
                 }
             }
         }

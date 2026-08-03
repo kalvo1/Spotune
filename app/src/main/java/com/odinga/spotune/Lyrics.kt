@@ -19,80 +19,7 @@ class Lyricsify(
     private val cachedJsonDir: File
 ) {
     private val fetchPageMutex = Mutex()
-    
-    val searchJs = """
-        !function() {
-            if (!location.href.includes('search')) return;
-            let retries = 0;
-            let body = document.querySelector('body')?.outerHTML || 'no body';
-            let timeOut = Date.now() + (60 * 1000);
-            
-            while (true) {
-                body = document.querySelector('body')?.outerHTML || 'no body';
-                if (Date.now() > timeOut) {
-                     console.log('[Lyricsify] timed out getting lyrics');
-                     break;
-                }
-                
-                if (body.includes('Top Results')) {
-                    break;
-                }
-            }
-            
-            body = document.querySelector('body')?.outerHTML || 'no body'
-            
-            if (!body.includes('Top Results')) {
-                window.JsBridge?.unhideWebView();
-
-                timeOut = Date.now() + (500 * 200)
-
-                while(true) {
-                    
-                }
-                
-                const w = setInterval(function() {
-                    retries++;
-                    if (retries > 500) {
-                        clearInterval(w);
-                    }
-                    
-                    if (body.includes('Top Results')) {
-                        clearInterval(w);
-                    }
-                    
-                    body = document.querySelector('body')?.outerHTML || 'no body'
-                }, 200);
-            }
-            
-            body = document.querySelector('body')?.outerHTML || 'no body'
-            retries = 0
-
-            const z = setInterval(function() {
-                retries++;
-                if (retries > 500) {
-                    clearInterval(z);
-                }
-                
-                if (body.includes('Top Results')) {
-                    clearInterval(z);
-                }
-                
-                body = document.querySelector('body')?.outerHTML || 'no body'
-                sendResult();
-            }, 200);
-            
-            const sendResult = () => {
-                let result = {status: "failed", html: null};
-                
-                if (body.includes('Top Results')) {
-                    result = {status: "ok", html: body};
-                }
-                
-                window.JsBridge?.setLyricsifyPage(JSON.stringify(result));
-                window.JsBridge?.hideWebView();
-            }
-        }()
-    """.trimIndent()
+    var searchJs: String? = null
     
     var fetchingCookie = false
     var cancelPageReq = false
@@ -188,8 +115,86 @@ class Lyricsify(
         
         var body: String? = null
         
+        searchJs = """
+            !function() {
+                let timeOut = Date.now() + (0.5 * 1000);
+                if (!location.href.includes('search')) {
+                    while (true) {
+                        if (Date.now() > timeOut) {
+                            break;
+                        }
+                    }
+                    location.href = '${url}';
+                }
+                
+                let retries = 0;
+                let body = document.querySelector('body')?.outerHTML || 'no body';
+                timeOut = Date.now() + (60 * 1000);
+                
+                while (true) {
+                    body = document.querySelector('body')?.outerHTML || 'no body';
+                    if (Date.now() > timeOut) {
+                         console.log('[Lyricsify] timed out getting lyrics');
+                         break;
+                    }
+                    
+                    if (body.includes('Top Results')) {
+                        break;
+                    }
+                }
+                
+                body = document.querySelector('body')?.outerHTML || 'no body'
+                
+                if (!body.includes('Top Results')) {
+                    window.JsBridge?.unhideWebView();
+    
+                    timeOut = Date.now() + (500 * 200)
+    
+                    while(true) {
+                        body = document.querySelector('body')?.outerHTML || 'no body';
+                        if (Date.now() > timeOut) {
+                             console.log('[Lyricsify] timed out getting lyrics');
+                             break;
+                        }
+                        
+                        if (body.includes('Top Results')) {
+                            break;
+                        }
+                    }
+                }
+                
+                body = document.querySelector('body')?.outerHTML || 'no body'
+                retries = 0
+    
+                const z = setInterval(function() {
+                    retries++;
+                    body = document.querySelector('body')?.outerHTML || 'no body';
+                    if (retries > 300) {
+                        clearInterval(z);
+                        sendResult();
+                    }
+                    
+                    if (body.includes('Top Results')) {
+                        clearInterval(z);
+                        sendResult();
+                    }
+                }, 200);
+                
+                const sendResult = () => {
+                    let result = {status: "failed", html: null};
+                    
+                    if (body.includes('Top Results')) {
+                        result = {status: "ok", html: body};
+                    }
+                    
+                    window.JsBridge?.setLyricsifyPage(JSON.stringify(result));
+                    window.JsBridge?.hideWebView();
+                }
+            }()
+        """.trimIndent()
+        
         if (cookies.isNullOrEmpty()) {
-            body = fetchPageFromBrowser(url)
+            body = fetchPageFromBrowser("https://www.lyricsify.com/")
         } else {
             val reqBuilder = Request.Builder().url(url)
             
@@ -200,7 +205,7 @@ class Lyricsify(
             body = makeGetRequest(req)
 
             if (body?.contains("Just a moment") == true) {
-                body = fetchPageFromBrowser(url)
+                body = fetchPageFromBrowser("https://www.lyricsify.com/")
             }
         }
 
@@ -218,6 +223,8 @@ class Lyricsify(
             
             CacheUtils.updateCacheSize("cached_json", body.toByteArray(Charsets.UTF_8).size.toLong())
         }
+        
+        searchJs = null
 
         return body
     }
